@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# 查找项目依赖
+# find_dependency(SomeDependency REQUIRED)
+
+# 包含项目目标
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+
+# 版本检查
+check_required_components(@PROJECT_NAME@)
