@@ -6,6 +6,7 @@ Binaries/
 .vs/
 .vscode/
 out/
+build/
 
 # 
 *.log

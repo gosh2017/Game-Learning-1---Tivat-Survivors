@@ -19,21 +19,21 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     PixelGame
 )
 
-# 在 Windows 上，确保运行时能找到 DLL
-#if(WIN32)
-#    # 方法1：将 DLL 复制到可执行文件目录
-#    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#            $<TARGET_FILE:PixelGame>
-#            $<TARGET_FILE_DIR:${PROJECT_NAME}>
-#        COMMENT "Copying PixelGame DLL to output directory"
-#    )
-#    
-#    # 方法2：设置环境变量（用于调试）
-#    # set_target_properties(app1 PROPERTIES
-#    #     VS_DEBUGGER_ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/bin;$ENV{PATH}"
-#    # )
-#endif()
+# On Windows, ensure that the DLL can be found at runtime.
+if(WIN32)
+    # Method 1: Copy the DLL to the executable file directory.
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:PixelGame>
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMENT "Copying PixelGame DLL to output directory."
+    )
+    
+    # Method 2: Set environment variables.(for debugging)
+    #set_target_properties(${PROJECT_NAME} PROPERTIES
+    #    VS_DEBUGGER_ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/bin;$ENV{PATH}"
+    #)
+endif()
 
 # Install tagrgets.
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})

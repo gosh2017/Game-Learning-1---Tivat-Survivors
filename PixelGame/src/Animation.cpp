@@ -1,18 +1,21 @@
 #include "Animation.h"
 #include "graphics.h"
 
+constexpr int gWinWidth = 918;
+constexpr int gWinHeight = 512;
+
 void GamePixel()
 {
     bool init = true;
     bool running = true;
 
-    initgraph(918, 512);
+    initgraph(gWinWidth, gWinHeight);
     char exePath[MAX_PATH] = {0};
     GetModuleFileName(NULL, exePath, MAX_PATH);
     SetCurrentDirectory(exePath);
 
-    IMAGE background;
-    loadimage(&background, _T("resources\\PixelAssets\\Background.png"));
+    IMAGE background{};
+    loadimage(&background, _T("Resources\\PixelAssets\\Background.png"));
 
     BeginBatchDraw();
     while (running)
