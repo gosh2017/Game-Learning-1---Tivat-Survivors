@@ -33,6 +33,7 @@ endif()
 set(EASYX_LIB "${CMAKE_SOURCE_DIR}/EasyXLibs")
 
 target_link_directories(${PROJECT_NAME} PRIVATE ${EASYX_LIB})
+target_link_libraries(${PROJECT_NAME} PRIVATE msimg32)
 
 if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR})
     message(WARNING "Debug libraries not found at: ${CMAKE_CURRENT_BINARY_DIR}")

@@ -1,4 +1,4 @@
-﻿#include "../../PixelGame/inc/Animation.h"
+﻿#include "../../PixelGame/inc/PixelGame.h"
 
 int main()
 {
