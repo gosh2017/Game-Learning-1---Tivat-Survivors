@@ -10,6 +10,14 @@ static constexpr int WIN_WIDTH = 918;
 static constexpr int WIN_HEIGHT = 512;
 static constexpr WindowBnd WIN_BND = {{0, 0}, {WIN_WIDTH, WIN_HEIGHT}};
 
+void TryGenEnemy(std::vector<std::unique_ptr<Animation>> &ents)
+{
+    static constexpr int INTERVAL = 100;
+    static int counter = 0;
+    if ((++counter) % INTERVAL == 0)
+        ents.push_back(AnimFactory::create(EAnimType::Enemy, WIN_BND, {}));
+}
+
 void GamePixel()
 {
     bool init = true;
@@ -22,7 +30,9 @@ void GamePixel()
 
     static constexpr POINT oriPlayerPos{450, 260};
 
-    auto player = AnimFactory::create(EAnimType::Player, WIN_BND, oriPlayerPos);
+    std::vector<std::unique_ptr<Animation>> ents;
+    ents.push_back(AnimFactory::create(EAnimType::Player, WIN_BND, oriPlayerPos));
+    auto &player = ents[0];
 
     BeginBatchDraw();
     while (running)
@@ -33,16 +43,18 @@ void GamePixel()
         ExMessage msg{};
         while (peekmessage(&msg))
         {
-            player->processEvt(msg);
+            ents[0]->processEvt(msg);
         }
 
-        player->move();
+        for (auto &ent : ents) ent->move(ents[0].get());
+
+        TryGenEnemy(ents);
 
         /* Draw. */
         cleardevice();
 
         putimage(0, 0, &background);
-        player->update(1000 / 144);
+        for (auto &ent : ents) ent->update(1000 / 144);
 
         FlushBatchDraw();
 

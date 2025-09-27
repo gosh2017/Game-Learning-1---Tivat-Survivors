@@ -31,12 +31,16 @@ public:
     Animation() = default;
     virtual ~Animation() = default;
 
-    void initCreate(const AnimResource &res, const WindowBnd &bnd, const POINT &oriPos);
+    virtual void initCreate(const AnimResource &res, const WindowBnd &bnd, const POINT &oriPos);
 
     virtual void processEvt(const ExMessage &msg);
 
-    virtual void move();
+    virtual void move(const Animation *ref);
     void update(int delta);
+
+    virtual int getSpeed() const = 0;
+
+    POINT getPos() const;
 
 protected:
     int m_timer;
@@ -58,10 +62,8 @@ public:
     virtual ~PlayerAnim() = default;
 
     void processEvt(const ExMessage &msg) override;
-    virtual void move() override;
-
-private:
-    static constexpr int m_playerSpeed = 5;
+    void move(const Animation *ref) override;
+    int getSpeed() const override;
 };
 
 class AnimFactory

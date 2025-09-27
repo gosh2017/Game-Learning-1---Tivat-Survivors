@@ -1,4 +1,5 @@
 #include "Animation.h"
+#include "Enemy.h"
 #include "PixelGameProperty.h"
 
 #include "graphics.h"
@@ -28,8 +29,13 @@ void Animation::processEvt(const ExMessage &msg)
 {
 }
 
-void Animation::move()
+void Animation::move(const Animation *ref)
 {
+}
+
+POINT Animation::getPos() const
+{
+    return m_pos;
 }
 
 void Animation::update(int delta)
@@ -93,7 +99,13 @@ void PlayerAnim::processEvt(const ExMessage &msg)
     }
 }
 
-void PlayerAnim::move()
+int PlayerAnim::getSpeed() const
+{
+    static constexpr int SPEED = 5;
+    return SPEED;
+}
+
+void PlayerAnim::move(const Animation *ref)
 {
     int dirX = isMoveRight - isMoveLeft;
     int dirY = isMoveDown - isMoveUp;
@@ -102,8 +114,8 @@ void PlayerAnim::move()
     {
         double norX = dirX / lenDir;
         double norY = dirY / lenDir;
-        m_pos.x += (int)(m_playerSpeed * norX);
-        m_pos.y += (int)(m_playerSpeed * norY);
+        m_pos.x += (int)(getSpeed() * norX);
+        m_pos.y += (int)(getSpeed() * norY);
     }
 
     if (m_pos.x < 0) m_pos.x = 0;
@@ -116,14 +128,17 @@ std::unique_ptr<Animation> AnimFactory::create(EAnimType type, const WindowBnd &
                                                const POINT &oriPos)
 {
     std::unique_ptr<Animation> anim = nullptr;
-    AnimResource res{"Charactor_", 2, 45};
+    AnimResource res{};
 
     switch (type)
     {
         case EAnimType::Player:
+            res = {"Charactor_", 2, 45};
             anim = std::make_unique<PlayerAnim>();
             break;
         case EAnimType::Enemy:
+            res = {"Enemy_", 2, 45};
+            anim = std::make_unique<Enemy>();
             break;
         default:
             break;
