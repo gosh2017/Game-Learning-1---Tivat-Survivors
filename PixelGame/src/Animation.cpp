@@ -1,5 +1,7 @@
 #include "Animation.h"
+#include "Player.h"
 #include "Enemy.h"
+#include "Bullet.h"
 #include "PixelGameProperty.h"
 
 #include "graphics.h"
@@ -33,9 +35,32 @@ void Animation::move(const Animation *ref)
 {
 }
 
+int Animation::getSpeed() const
+{
+    return 5;
+}
+
+bool Animation::checkCollision(const Animation &other) const
+{
+    return false;
+}
+
 POINT Animation::getPos() const
 {
     return m_pos;
+}
+
+void Animation::setPos(const POINT &pos)
+{
+    m_pos = pos;
+}
+
+EBattleRes Animation::battle(const Animation &other) const
+{
+    EBattleRes res = EBattleRes::Draw;
+    if (checkCollision(other)) res = EBattleRes::Defeat;
+
+    return res;
 }
 
 void Animation::update(int delta)
@@ -48,80 +73,6 @@ void Animation::update(int delta)
     }
 
     PutImageAlpha(m_pos, m_frameList[m_frameIdx].get());
-}
-
-static bool isMoveUp = false;
-static bool isMoveDown = false;
-static bool isMoveLeft = false;
-static bool isMoveRight = false;
-
-void PlayerAnim::processEvt(const ExMessage &msg)
-{
-    if (msg.message == WM_KEYDOWN)
-    {
-        switch (msg.vkcode)
-        {
-            case VK_UP:
-                isMoveUp = true;
-                break;
-            case VK_DOWN:
-                isMoveDown = true;
-                break;
-            case VK_LEFT:
-                isMoveLeft = true;
-                break;
-            case VK_RIGHT:
-                isMoveRight = true;
-                break;
-            default:
-                break;
-        }
-    }
-    else if (msg.message == WM_KEYUP)
-    {
-        switch (msg.vkcode)
-        {
-            case VK_UP:
-                isMoveUp = false;
-                break;
-            case VK_DOWN:
-                isMoveDown = false;
-                break;
-            case VK_LEFT:
-                isMoveLeft = false;
-                break;
-            case VK_RIGHT:
-                isMoveRight = false;
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-int PlayerAnim::getSpeed() const
-{
-    static constexpr int SPEED = 5;
-    return SPEED;
-}
-
-void PlayerAnim::move(const Animation *ref)
-{
-    int dirX = isMoveRight - isMoveLeft;
-    int dirY = isMoveDown - isMoveUp;
-    double lenDir = sqrt(abs(dirX) + abs(dirY));
-    if (lenDir != 0)
-    {
-        double norX = dirX / lenDir;
-        double norY = dirY / lenDir;
-        m_pos.x += (int)(getSpeed() * norX);
-        m_pos.y += (int)(getSpeed() * norY);
-    }
-
-    if (m_pos.x < 0) m_pos.x = 0;
-    if (m_pos.y < 0) m_pos.y = 0;
-    if (m_pos.x + m_WIDTH > m_winBnd.rightBot.x) m_pos.x = m_winBnd.rightBot.x - m_WIDTH;
-    if (m_pos.y + m_HEIGHT > m_winBnd.rightBot.y) m_pos.y = m_winBnd.rightBot.y - m_HEIGHT;
 }
 
 std::unique_ptr<Animation> AnimFactory::create(EAnimType type, const WindowBnd &bnd,
@@ -139,6 +90,10 @@ std::unique_ptr<Animation> AnimFactory::create(EAnimType type, const WindowBnd &
         case EAnimType::Enemy:
             res = {"Enemy_", 2, 45};
             anim = std::make_unique<Enemy>();
+            break;
+        case EAnimType::Bullet:
+            res = {"", 1, 45};
+            anim = std::make_unique<Bullet>();
             break;
         default:
             break;

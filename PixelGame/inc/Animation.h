@@ -10,6 +10,14 @@ enum class EAnimType
 {
     Player,
     Enemy,
+    Bullet,
+};
+
+enum class EBattleRes
+{
+    Draw,
+    Win,
+    Defeat,
 };
 
 struct AnimResource
@@ -36,11 +44,17 @@ public:
     virtual void processEvt(const ExMessage &msg);
 
     virtual void move(const Animation *ref);
-    void update(int delta);
+    virtual void update(int delta);
 
-    virtual int getSpeed() const = 0;
+    virtual int getSpeed() const;
 
     POINT getPos() const;
+    void setPos(const POINT &pos);
+
+    EBattleRes battle(const Animation &other) const;
+
+protected:
+    virtual bool checkCollision(const Animation &other) const;
 
 protected:
     int m_timer;
@@ -53,17 +67,6 @@ protected:
 protected:
     static constexpr int m_WIDTH = 40;
     static constexpr int m_HEIGHT = 40;
-};
-
-class PlayerAnim : public Animation
-{
-public:
-    PlayerAnim() = default;
-    virtual ~PlayerAnim() = default;
-
-    void processEvt(const ExMessage &msg) override;
-    void move(const Animation *ref) override;
-    int getSpeed() const override;
 };
 
 class AnimFactory

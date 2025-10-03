@@ -31,8 +31,7 @@ void GamePixel()
     static constexpr POINT oriPlayerPos{450, 260};
 
     std::vector<std::unique_ptr<Animation>> ents;
-    ents.push_back(AnimFactory::create(EAnimType::Player, WIN_BND, oriPlayerPos));
-    auto &player = ents[0];
+    auto player = AnimFactory::create(EAnimType::Player, WIN_BND, oriPlayerPos);
 
     BeginBatchDraw();
     while (running)
@@ -43,10 +42,21 @@ void GamePixel()
         ExMessage msg{};
         while (peekmessage(&msg))
         {
-            ents[0]->processEvt(msg);
+            player->processEvt(msg);
         }
 
-        for (auto &ent : ents) ent->move(ents[0].get());
+        player->move(nullptr);
+        for (auto &ent : ents) ent->move(player.get());
+
+        for (auto &ent : ents)
+        {
+            if (player->battle(*ent) == EBattleRes::Defeat)
+            {
+                MessageBox(GetHWnd(), _T("扣“1”观看战败CG"), _T("游戏结束"), MB_OK);
+                running = false;
+                break;
+            }
+        }
 
         TryGenEnemy(ents);
 
@@ -54,6 +64,7 @@ void GamePixel()
         cleardevice();
 
         putimage(0, 0, &background);
+        player->update(1000 / 144);
         for (auto &ent : ents) ent->update(1000 / 144);
 
         FlushBatchDraw();

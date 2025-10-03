@@ -54,12 +54,21 @@ void Enemy::move(const Animation *ref)
     }
 }
 
-bool Enemy::CheckBulletCollision(const Bullet &bullet)
+bool Enemy::checkCollision(const Animation &bullet) const
 {
-    return false;
-}
+    try
+    {
+        dynamic_cast<const Bullet &>(bullet);
+    }
+    catch (...)
+    {
+        return false;
+    }
 
-bool Enemy::CheckPlayerCollision(const Animation &ref)
-{
-    return false;
+    bool isOverlapX =
+        bullet.getPos().x >= this->getPos().x && bullet.getPos().x <= this->getPos().x + m_WIDTH;
+    bool isOverlapY =
+        bullet.getPos().y >= this->getPos().y && bullet.getPos().y <= this->getPos().y + m_HEIGHT;
+
+    return isOverlapX && isOverlapY;
 }

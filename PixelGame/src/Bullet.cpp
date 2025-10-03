@@ -8,3 +8,8 @@ void Bullet::draw() const
     setfillcolor(RGB(200, 75, 10));
     fillcircle(m_pos.x, m_pos.y, RADIUS);
 }
+
+void Bullet::update(int delta)
+{
+    draw();
+}

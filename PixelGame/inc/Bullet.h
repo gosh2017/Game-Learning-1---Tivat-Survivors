@@ -1,7 +1,9 @@
 #pragma once
+#include "Animation.h"
+
 #include <windows.h>
 
-class Bullet
+class Bullet : public Animation
 {
 public:
     Bullet() = default;
@@ -9,9 +11,8 @@ public:
 
     void draw() const;
 
-private:
-    static constexpr int RADIUS = 10;
+    void update(int delta) override;
 
 private:
-    POINT m_pos;
+    static constexpr int RADIUS = 10;
 };

@@ -24,6 +24,5 @@ public:
 
     void move(const Animation *ref) override;
 
-    bool CheckBulletCollision(const Bullet &bullet);
-    bool CheckPlayerCollision(const Animation &ref);
+    bool checkCollision(const Animation &bullet) const override;
 };
