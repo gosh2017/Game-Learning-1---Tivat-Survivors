@@ -8,7 +8,7 @@ file(GLOB_RECURSE PIXELGAME_HEADERS inc/*.h)
 
 add_library(${PROJECT_NAME} SHARED
 ${PIXELGAME_SOURCES} ${PIXELGAME_HEADERS})
-add_library(PixelGameTry::${PROJECT_NAME} ALIAS PixelGame)
+add_library(TivatSurvivors::${PROJECT_NAME} ALIAS PixelGame)
 
 # Set dll version.(Selected)
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -70,5 +70,5 @@ install(TARGETS ${PROJECT_NAME}
 
 export(TARGETS ${PROJECT_NAME}
     FILE "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Targets.cmake"
-    NAMESPACE PixelGameTry::
+    NAMESPACE TivatSurvivors::
 )

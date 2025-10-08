@@ -2,7 +2,7 @@
 # and include sub-projects here.
 #
 cmake_minimum_required (VERSION 3.12)
-project(PixelGameTry
+project(TivatSurvivors
     VERSION 1.0.0
     DESCRIPTION "My C++ Project with multiple components"
     LANGUAGES CXX
@@ -68,8 +68,8 @@ include(GNUInstallDirs)
 # Export targets.
 install(EXPORT PixelGame-targets
     FILE PixelGameTryCommonTargets.cmake
-    NAMESPACE PixelGameTry::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PixelGameTry
+    NAMESPACE TivatSurvivors::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/TivatSurvivors
 )
 
 # Package configuration.
@@ -85,13 +85,13 @@ write_basic_package_version_file(
 configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/PixelGameTryConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/PixelGameTryConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PixelGameTry
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/TivatSurvivors
 )
 
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/PixelGameTryConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/PixelGameTryConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PixelGameTry
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/TivatSurvivors
 )
 
 # Install pdb files.
