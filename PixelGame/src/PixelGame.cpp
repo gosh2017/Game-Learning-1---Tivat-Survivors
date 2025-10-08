@@ -56,7 +56,7 @@ void GamePixel()
                 }
             }
 
-            for (int i = 0; i < ents.size(); i++)
+            for (int i = ents.size() - 1; i >= 0; i--)
             {
                 if (!ents[i]->isAlive())
                 {
