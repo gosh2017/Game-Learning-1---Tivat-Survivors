@@ -1,40 +1,26 @@
 #include "PixelGame.h"
 #include "PixelGameProperty.h"
+#include "GameConsole.h"
 #include "Animation.h"
+#include "Atlas.h"
 #include "graphics.h"
 
 #include <windows.h>
 #include <wingdi.h>
-
-static constexpr int WIN_WIDTH = 918;
-static constexpr int WIN_HEIGHT = 512;
-static constexpr WindowBnd WIN_BND = {{0, 0}, {WIN_WIDTH, WIN_HEIGHT}};
-
-void TryGenEnemy(std::vector<std::unique_ptr<Animation>> &ents)
-{
-    static constexpr int INTERVAL = 100;
-    static int counter = 0;
-    if ((++counter) % INTERVAL == 0)
-        ents.push_back(AnimFactory::create(EAnimType::Enemy, WIN_BND, {}));
-}
+#include <mmsystem.h>
 
 void GamePixel()
 {
-    bool init = true;
-    bool running = true;
-
-    initgraph(WIN_WIDTH, WIN_HEIGHT);
+    GAME_CONSOLE_INS.init();
 
     IMAGE background{};
-    loadimage(&background, std::string(RESOURCE_PATH + _T("\\Background.png")).c_str());
-
-    static constexpr POINT oriPlayerPos{450, 260};
+    loadimage(&background, std::string(RESOURCE_PIXEL_PATH + _T("\\Background.png")).c_str());
 
     std::vector<std::unique_ptr<Animation>> ents;
-    auto player = AnimFactory::create(EAnimType::Player, WIN_BND, oriPlayerPos);
+    auto player = GAME_CONSOLE_INS.player();
 
     BeginBatchDraw();
-    while (running)
+    while (GAME_CONSOLE_INS.isRunning())
     {
         DWORD startTime = GetTickCount();
 
@@ -42,30 +28,60 @@ void GamePixel()
         ExMessage msg{};
         while (peekmessage(&msg))
         {
-            player->processEvt(msg);
+            GAME_CONSOLE_INS.processMenu(msg);
         }
 
-        player->move(nullptr);
-        for (auto &ent : ents) ent->move(player.get());
-
-        for (auto &ent : ents)
+        if (GAME_CONSOLE_INS.isGameStarted())
         {
-            if (player->battle(*ent) == EBattleRes::Defeat)
+            GAME_CONSOLE_INS.tryGenEnemy(ents);
+
+            player->move(nullptr);
+            for (auto &ent : ents) ent->move(player);
+
+            for (auto &ent : ents)
             {
-                MessageBox(GetHWnd(), _T("扣“1”观看战败CG"), _T("游戏结束"), MB_OK);
-                running = false;
-                break;
+                EBattleRes res = player->battle(*ent);
+                if (res == EBattleRes::Defeat)
+                {
+                    TCHAR text[128];
+                    _stprintf_s(text, _T("玩家最终得分：%d ！"), GAME_CONSOLE_INS.getScore());
+                    MessageBox(GetHWnd(), text, _T("游戏结束"), MB_OK);
+                    GAME_CONSOLE_INS.setRunning(false);
+                    break;
+                }
+                else if (res == EBattleRes::Win)
+                {
+                    ent->hurt();
+                    mciSendString(_T("play hit from 0"), nullptr, 0, nullptr);
+                }
+            }
+
+            for (int i = 0; i < ents.size(); i++)
+            {
+                if (!ents[i]->isAlive())
+                {
+                    std::swap(ents[i], ents.back());
+                    ents.pop_back();
+                    GAME_CONSOLE_INS.setScore(GAME_CONSOLE_INS.getScore() + 1);
+                }
             }
         }
-
-        TryGenEnemy(ents);
 
         /* Draw. */
         cleardevice();
 
-        putimage(0, 0, &background);
-        player->update(1000 / 144);
-        for (auto &ent : ents) ent->update(1000 / 144);
+        if (GAME_CONSOLE_INS.isGameStarted())
+        {
+            putimage(0, 0, &background);
+            player->update(1000 / 144);
+            for (auto &ent : ents) ent->update(1000 / 144);
+
+            GAME_CONSOLE_INS.drawPlayerScore();
+        }
+        else
+        {
+            GAME_CONSOLE_INS.showMenu();
+        }
 
         FlushBatchDraw();
 

@@ -13,6 +13,8 @@ public:
 
     void update(int delta) override;
 
+    EAnimType getType() const override;
+
 private:
     static constexpr int RADIUS = 10;
 };

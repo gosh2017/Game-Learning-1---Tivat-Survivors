@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
+#include "Atlas.h"
 
 #include "graphics.h"
 
@@ -8,9 +9,16 @@ void PlayerAnim::initCreate(const AnimResource &res, const WindowBnd &bnd, const
 {
     Animation::initCreate(res, bnd, oriPos);
 
+    m_shallow = Atlas::getInstance().getImage(EImageType::ShadowPlayer);
+
     m_bullets.push_back(std::move(AnimFactory::create(EAnimType::Bullet, bnd, {})));
     m_bullets.push_back(std::move(AnimFactory::create(EAnimType::Bullet, bnd, {})));
     m_bullets.push_back(std::move(AnimFactory::create(EAnimType::Bullet, bnd, {})));
+}
+
+EAnimType PlayerAnim::getType() const
+{
+    return EAnimType::Player;
 }
 
 static bool isMoveUp = false;
@@ -83,8 +91,10 @@ void PlayerAnim::move(const Animation *ref)
 
     if (m_pos.x < 0) m_pos.x = 0;
     if (m_pos.y < 0) m_pos.y = 0;
-    if (m_pos.x + m_WIDTH > m_winBnd.rightBot.x) m_pos.x = m_winBnd.rightBot.x - m_WIDTH;
-    if (m_pos.y + m_HEIGHT > m_winBnd.rightBot.y) m_pos.y = m_winBnd.rightBot.y - m_HEIGHT;
+    if (m_pos.x + m_width > m_winBnd.rightBot.x) m_pos.x = m_winBnd.rightBot.x - m_width;
+    if (m_pos.y + m_height > m_winBnd.rightBot.y) m_pos.y = m_winBnd.rightBot.y - m_height;
+
+    if (dirX != 0) m_orientation = dirX > 0 ? EOrientation::Right : EOrientation::Left;
 
     for (int i = 0; i < m_bullets.size(); i++)
     {
@@ -97,8 +107,8 @@ void PlayerAnim::move(const Animation *ref)
 
         double radian = GetTickCount() * TANGENT_SPEED + radianInterval * i;
 
-        m_bullets[i]->setPos({relPos.x + m_WIDTH / 2 + (int)(radius * sin(radian)),
-                              relPos.y + m_HEIGHT / 2 + (int)(radius * cos(radian))});
+        m_bullets[i]->setPos({relPos.x + m_width / 2 + (int)(radius * sin(radian)),
+                              relPos.y + m_height / 2 + (int)(radius * cos(radian))});
     }
 }
 
@@ -109,7 +119,19 @@ void PlayerAnim::update(int delta)
     for (auto &bullet : m_bullets) bullet->update(delta);
 }
 
-bool PlayerAnim::checkCollision(const Animation &other) const
+EBattleRes PlayerAnim::battle(const Animation &other) const
+{
+    EBattleRes res = EBattleRes::Draw;
+
+    if (checkCollisionSelf(other))
+        res = EBattleRes::Defeat;
+    else if (checkCollisionBullet(other))
+        res = EBattleRes::Win;
+
+    return res;
+}
+
+bool PlayerAnim::checkCollisionSelf(const Animation &other) const
 {
     try
     {
@@ -120,10 +142,35 @@ bool PlayerAnim::checkCollision(const Animation &other) const
         return false;
     }
 
-    POINT checkPos = {other.getPos().x + m_WIDTH / 2, other.getPos().y + m_HEIGHT / 2};
+    POINT checkPos = {other.getPos().x + m_width / 2, other.getPos().y + m_height / 2};
 
-    bool isOverlapX = getPos().x >= other.getPos().x && getPos().x <= other.getPos().x + m_WIDTH;
-    bool isOverlapY = getPos().y >= other.getPos().y && getPos().y <= other.getPos().y + m_HEIGHT;
+    bool isOverlapX = getPos().x >= other.getPos().x && getPos().x <= other.getPos().x + m_width;
+    bool isOverlapY = getPos().y >= other.getPos().y && getPos().y <= other.getPos().y + m_height;
 
     return isOverlapX && isOverlapY;
+}
+
+bool PlayerAnim::checkCollisionBullet(const Animation &other) const
+{
+    try
+    {
+        dynamic_cast<const Enemy &>(other);
+    }
+    catch (...)
+    {
+        return false;
+    }
+
+    POINT checkPos = {other.getPos().x + m_width / 2, other.getPos().y + m_height / 2};
+
+    for (int i = 0; i < m_bullets.size(); i++)
+    {
+        bool isOverlapX = m_bullets[i]->getPos().x >= other.getPos().x &&
+                          m_bullets[i]->getPos().x <= other.getPos().x + m_width;
+        bool isOverlapY = m_bullets[i]->getPos().y >= other.getPos().y &&
+                          m_bullets[i]->getPos().y <= other.getPos().y + m_height;
+        if (isOverlapX && isOverlapY) return true;
+    }
+
+    return false;
 }

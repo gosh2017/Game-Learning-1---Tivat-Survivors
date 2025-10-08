@@ -19,10 +19,9 @@ public:
     virtual ~Enemy() = default;
 
     void initCreate(const AnimResource &res, const WindowBnd &bnd, const POINT &oriPos) override;
+    EAnimType getType() const override;
 
     int getSpeed() const override;
 
     void move(const Animation *ref) override;
-
-    bool checkCollision(const Animation &bullet) const override;
 };

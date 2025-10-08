@@ -2,7 +2,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Bullet.h"
-#include "PixelGameProperty.h"
+#include "Atlas.h"
 
 #include "graphics.h"
 
@@ -14,17 +14,20 @@ void PutImageAlpha(const POINT &pos, IMAGE *img)
                {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA});
 }
 
+EAnimType Animation::getType() const
+{
+    return EAnimType::None;
+}
+
 void Animation::initCreate(const AnimResource &res, const WindowBnd &bnd, const POINT &oriPos)
 {
     m_intervalMs = res.interval;
     m_winBnd = bnd;
     m_pos = oriPos;
-    for (int i = 0; i < res.playerAnimNum; i++)
-    {
-        m_frameList.push_back(std::make_unique<IMAGE>());
-        std::string path = RESOURCE_PATH + "\\" + res.path + std::to_string(i) + ".png";
-        loadimage(m_frameList[i].get(), path.c_str(), m_WIDTH, m_HEIGHT, true);
-    }
+    m_width = res.width;
+    m_height = res.height;
+    m_leftFrameList = Atlas::getInstance().getFrameList(getType(), EOrientation::Left);
+    m_rightFrameList = Atlas::getInstance().getFrameList(getType(), EOrientation::Right);
 }
 
 void Animation::processEvt(const ExMessage &msg)
@@ -40,11 +43,6 @@ int Animation::getSpeed() const
     return 5;
 }
 
-bool Animation::checkCollision(const Animation &other) const
-{
-    return false;
-}
-
 POINT Animation::getPos() const
 {
     return m_pos;
@@ -57,22 +55,41 @@ void Animation::setPos(const POINT &pos)
 
 EBattleRes Animation::battle(const Animation &other) const
 {
-    EBattleRes res = EBattleRes::Draw;
-    if (checkCollision(other)) res = EBattleRes::Defeat;
+    return EBattleRes::Draw;
+}
 
-    return res;
+void Animation::hurt()
+{
+    m_alive = false;
+}
+
+bool Animation::isAlive()
+{
+    return m_alive;
 }
 
 void Animation::update(int delta)
 {
+    // static constexpr int SHALLOW_WIDTH = 32;
+    POINT shallowPos{};
+    shallowPos.x = getPos().x + (m_width / 2 - m_shallow->getwidth() / 2);
+    shallowPos.y = getPos().y + m_height - m_shallowOffset;
+    PutImageAlpha(shallowPos, m_shallow);
+
+    const FrameList *frameList = m_leftFrameList;
+    if (EOrientation::Left == m_orientation)
+        frameList = m_leftFrameList;
+    else if (EOrientation::Right == m_orientation)
+        frameList = m_rightFrameList;
+
     m_timer += delta;
     if (m_timer >= m_intervalMs)
     {
-        m_frameIdx = (m_frameIdx + 1) % m_frameList.size();
+        m_frameIdx = (m_frameIdx + 1) % frameList->size();
         m_timer = 0;
     }
 
-    PutImageAlpha(m_pos, m_frameList[m_frameIdx].get());
+    PutImageAlpha(m_pos, (*frameList)[m_frameIdx].get());
 }
 
 std::unique_ptr<Animation> AnimFactory::create(EAnimType type, const WindowBnd &bnd,
@@ -84,11 +101,11 @@ std::unique_ptr<Animation> AnimFactory::create(EAnimType type, const WindowBnd &
     switch (type)
     {
         case EAnimType::Player:
-            res = {"Charactor_", 2, 45};
+            res = {"", 6, 45, 50, 50};
             anim = std::make_unique<PlayerAnim>();
             break;
         case EAnimType::Enemy:
-            res = {"Enemy_", 2, 45};
+            res = {"", 6, 45, 50, 50};
             anim = std::make_unique<Enemy>();
             break;
         case EAnimType::Bullet:

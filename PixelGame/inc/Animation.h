@@ -1,31 +1,7 @@
 ﻿#pragma once
-#include <vector>
-#include <memory>
-#include <windows.h>
+#include "PixelGameProperty.h"
 
-class IMAGE;
 class ExMessage;
-
-enum class EAnimType
-{
-    Player,
-    Enemy,
-    Bullet,
-};
-
-enum class EBattleRes
-{
-    Draw,
-    Win,
-    Defeat,
-};
-
-struct AnimResource
-{
-    LPCTSTR path;
-    int playerAnimNum;
-    int interval;
-};
 
 struct WindowBnd
 {
@@ -41,6 +17,8 @@ public:
 
     virtual void initCreate(const AnimResource &res, const WindowBnd &bnd, const POINT &oriPos);
 
+    virtual EAnimType getType() const;
+
     virtual void processEvt(const ExMessage &msg);
 
     virtual void move(const Animation *ref);
@@ -51,22 +29,27 @@ public:
     POINT getPos() const;
     void setPos(const POINT &pos);
 
-    EBattleRes battle(const Animation &other) const;
+    virtual EBattleRes battle(const Animation &other) const;
 
-protected:
-    virtual bool checkCollision(const Animation &other) const;
+    void hurt();
+    bool isAlive();
 
 protected:
     int m_timer;
     int m_frameIdx;
     int m_intervalMs;
     POINT m_pos;
-    std::vector<std::unique_ptr<IMAGE>> m_frameList;
+    FrameList *m_leftFrameList = nullptr;
+    FrameList *m_rightFrameList = nullptr;
+    IMAGE *m_shallow = nullptr;
+    int m_shallowOffset = 8;
     WindowBnd m_winBnd;
+    bool m_alive = true;
+    EOrientation m_orientation = EOrientation::Left;
 
 protected:
-    static constexpr int m_WIDTH = 40;
-    static constexpr int m_HEIGHT = 40;
+    int m_width = 50;
+    int m_height = 50;
 };
 
 class AnimFactory
